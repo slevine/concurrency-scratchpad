@@ -8,5 +8,5 @@ Available/Planned Examples:
 * `scala.async.Async.{async, await}` - _soon_
 * `akka.dataflow._` - _soon_
 
-Next will be more advanced "real" implementations, makeing real network calls and performing real calculations.
+Next will be more advanced "real" implementations, making real network calls and performing real calculations.
 
