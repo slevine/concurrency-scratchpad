@@ -1,0 +1,9 @@
+target*
+lib_managed/
+src_managed/
+project/boot/
+.classpath
+.idea*
+.project
+.settings
+*.iml
