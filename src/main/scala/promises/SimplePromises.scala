@@ -25,8 +25,10 @@ object SimplePromises extends App with MockServices {
         logger.debug("quoteProducer answered quotePromise")
         quotePromise success q
     }
-    updateQuoteCache()
-    updatePromise.complete(Try(true))
+    Future {
+      updateQuoteCache()
+      updatePromise.complete(Try(true))
+    }
   }
 
   val calculator = Future {
