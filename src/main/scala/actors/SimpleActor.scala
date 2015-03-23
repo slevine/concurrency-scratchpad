@@ -6,18 +6,16 @@ package actors
  * Date: 4/7/14
  */
 
-import akka.event.LoggingReceive
-import scala.concurrent._
-import ExecutionContext.Implicits.global
-import akka.pattern.{ask, pipe}
+import actors.Market.{CalcMarketCap, GetFutureQuote, GetQuote, _}
 import akka.actor._
+import akka.event.LoggingReceive
+import akka.pattern.{ask, pipe}
 import akka.util.Timeout
-import scala.concurrent.duration._
-import actors.Market._
 import financial.MockServices
-import actors.Market.GetQuote
-import actors.Market.GetFutureQuote
-import actors.Market.CalcMarketCap
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent._
+import scala.concurrent.duration._
 
 /**
  * Created by IntelliJ IDEA.
@@ -38,6 +36,8 @@ object Market {
   case class GetFutureQuote(symbol: String)
 
   case class CalcMarketCap(symbol: String)
+
+  case class CalcMarketCapFlat(symbol: String)
 
 }
 
@@ -69,9 +69,14 @@ class CalcSvc extends Actor with ActorLogging with MockServices {
       val fq = quoteSvc ? GetQuote(symbol)
       val fos = marketSvc ? GetOutstandingShares(symbol)
       val result = for {
-        q <- fq.mapTo[Int]
-        mc <- fos.mapTo[Int]
+        q ← fq.mapTo[Int]
+        mc ← fos.mapTo[Int]
       } yield calculateMarketCap(q, mc)
+      sender ! result
+    case CalcMarketCapFlat(symbol) ⇒
+      val fq = quoteSvc ? GetQuote(symbol)
+      val fos = marketSvc ? GetOutstandingShares(symbol)
+      val result = fq.mapTo[Int] flatMap (q ⇒ fos.mapTo[Int] map (os ⇒ calculateMarketCap(q,os)))
       sender ! result
   }
 
@@ -81,6 +86,7 @@ class SimpleActor extends Actor with ActorLogging {
   log.info("Starting Main")
   val calcSvc = context.actorOf(Props[CalcSvc], "calcSvc")
   calcSvc ! CalcMarketCap("tsla")
+  calcSvc ! CalcMarketCapFlat("tsla")
 
   def receive = LoggingReceive {
     case x: Promise[_] ⇒
