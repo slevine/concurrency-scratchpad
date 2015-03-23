@@ -2,8 +2,8 @@ package async
 
 import financial.MockServices
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.async.Async.{async, await}
+import scala.concurrent.ExecutionContext.Implicits.global
 
 /**
  * Created by IntelliJ IDEA.
@@ -17,11 +17,10 @@ object SimpleAsync extends App with MockServices {
     val o = async(outstandingShares("tsla"))
     calculateMarketCap(await(q), await(o))
   }
+
   val u = async(updateQuoteCache())
 
-  marketCap onSuccess {
-    case mc ⇒ logger.debug(s"market cap = $mc")
-  }
+  marketCap onSuccess {case mc ⇒ logger.debug(s"market cap = $mc")}
 
   // Prevent the program from exiting before the proper conclusion
   while (!u.isCompleted) {}
