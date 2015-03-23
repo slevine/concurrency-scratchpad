@@ -13,10 +13,8 @@ import scala.async.Async.{async, await}
 object SimpleAsync extends App with MockServices {
 
   val marketCap = async {
-    logger.debug("marketCap calc spawned")
     val q = async(quote("tsla"))
     val o = async(outstandingShares("tsla"))
-    logger.debug("calculator spawned")
     calculateMarketCap(await(q), await(o))
   }
   val u = async(updateQuoteCache())
